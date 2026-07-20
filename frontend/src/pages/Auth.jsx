@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { authAPI } from '../services/api';
 import { Mail, Lock, User, AlertCircle } from 'lucide-react';
 
 export default function Auth() {
@@ -25,31 +24,43 @@ export default function Auth() {
     setError('');
     setLoading(true);
 
-    try {
-      let response;
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
 
-      if (isLogin) {
-        response = await authAPI.login(formData.email, formData.password);
-      } else {
+    try {
+      // Mock authentication - accept any valid input
+      if (!formData.email || !formData.password) {
+        setError('Email and password are required');
+        setLoading(false);
+        return;
+      }
+
+      if (!isLogin) {
+        if (!formData.name) {
+          setError('Name is required');
+          setLoading(false);
+          return;
+        }
         if (formData.password !== formData.confirmPassword) {
           setError('Passwords do not match');
           setLoading(false);
           return;
         }
-        response = await authAPI.register(formData.name, formData.email, formData.password);
       }
 
-      // Store token
-      localStorage.setItem('token', response.data.token);
+      // Mock token (in real app, comes from backend)
+      const mockToken = 'mock_token_' + Math.random().toString(36).substring(7);
+      
+      localStorage.setItem('token', mockToken);
       localStorage.setItem('user', JSON.stringify({
-        email: response.data.email,
-        name: response.data.name,
+        email: formData.email,
+        name: formData.name || formData.email.split('@')[0],
       }));
 
       // Redirect to dashboard
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Authentication failed. Please try again.');
+      setError('Authentication failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -69,6 +80,11 @@ export default function Auth() {
               Expense Tracker
             </h1>
             <p className="text-gray-400">Manage your finances smartly</p>
+          </div>
+
+          {/* Demo Notice */}
+          <div className="mb-4 p-3 bg-blue-900/30 border border-blue-800 rounded-lg">
+            <p className="text-blue-300 text-sm">Demo Mode: Use any email and password to proceed</p>
           </div>
 
           {/* Error message */}
